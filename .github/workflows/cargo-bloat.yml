@@ -1,0 +1,17 @@
+name: cargo-bloat
+
+on:
+  push:
+    branches:
+      - cargo-bloat
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      crate: cargo-bloat
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write

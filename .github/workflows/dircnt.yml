@@ -1,0 +1,17 @@
+name: dircnt
+
+on:
+  push:
+    branches:
+      - dircnt
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      crate: dircnt
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write

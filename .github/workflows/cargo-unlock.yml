@@ -1,0 +1,17 @@
+name: cargo-unlock
+
+on:
+  push:
+    branches:
+      - cargo-unlock
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      crate: cargo-unlock
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write

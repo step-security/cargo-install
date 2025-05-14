@@ -1,0 +1,17 @@
+name: cargo-outdated
+
+on:
+  push:
+    branches:
+      - cargo-outdated
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      crate: cargo-outdated
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write

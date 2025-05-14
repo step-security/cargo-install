@@ -1,0 +1,17 @@
+name: star-history
+
+on:
+  push:
+    branches:
+      - star-history
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      crate: star-history
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write

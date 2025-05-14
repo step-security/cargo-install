@@ -1,0 +1,53 @@
+name: cargo install
+author: step-security
+description: Fast `cargo install` action using a GitHub-based binary cache
+inputs:
+  crate:
+    description: Name of crate as published to crates.io
+    required: true
+  bin:
+    description: Name of binary; default = same as crate name
+    required: false
+  github_token:
+    description: Access token for connecting to GitHub API for artifact attestation; normally the ephemeral {{github.token}} when used in a GitHub workflow, or a personal access token {{secrets.GH_TOKEN}} in Gitea's act runner
+    default: ${{github.token}}
+runs:
+  using: composite
+  steps:
+    - name: Check subscription
+      run: |
+        API_URL="https://agent.api.stepsecurity.io/v1/github/$GITHUB_REPOSITORY/actions/subscription"
+        
+        RESPONSE=$(curl --max-time 3 -s -w "%{http_code}" "$API_URL" -o /dev/null) || true
+        CURL_EXIT_CODE=${?}
+
+        if [ "$CURL_EXIT_CODE" -ne 0 ] || [ "$RESPONSE" != "200" ]; then
+          if [ -z "$RESPONSE" ] || [ "$RESPONSE" = "000" ] || [ "$CURL_EXIT_CODE" -ne 0 ]; then
+            echo "Timeout or API not reachable. Continuing to next step."
+          else
+            echo "Subscription is not valid. Reach out to support@stepsecurity.io"
+            exit 1
+          fi
+        fi
+      shell: bash
+    - name: Check inputs
+      run: |
+        echo "crate=${{inputs.crate}}" >> $GITHUB_OUTPUT
+        echo "bin=${{inputs.bin || inputs.crate}}" >> $GITHUB_OUTPUT
+      shell: bash
+      id: inputs
+    - name: Determine cargo bin directory
+      run: echo "dir=$(dirname $(which cargo))" >> $GITHUB_OUTPUT
+      shell: bash
+      id: cargo
+    - name: Download ${{steps.inputs.outputs.bin}}
+      run: curl --output ${{steps.cargo.outputs.dir}}/${{steps.inputs.outputs.bin}} https://github.com/dtolnay/install/releases/download/${{steps.inputs.outputs.crate}}/${{steps.inputs.outputs.bin}} --location --silent --show-error --fail --retry 5
+      shell: bash
+    - name: Verify artifact attestation
+      run: gh attestation verify --owner dtolnay ${{steps.cargo.outputs.dir}}/${{steps.inputs.outputs.bin}}
+      env:
+        GH_TOKEN: ${{inputs.github_token}}
+      shell: bash
+    - name: Set executable bit
+      run: chmod +x ${{steps.cargo.outputs.dir}}/${{steps.inputs.outputs.bin}}
+      shell: bash

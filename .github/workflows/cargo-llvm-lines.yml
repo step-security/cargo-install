@@ -1,0 +1,17 @@
+name: cargo-llvm-lines
+
+on:
+  push:
+    branches:
+      - cargo-llvm-lines
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      crate: cargo-llvm-lines
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write

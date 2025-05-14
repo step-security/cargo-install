@@ -1,0 +1,19 @@
+name: rustup-toolchain-install-master
+
+on:
+  push:
+    branches:
+      - rustup-toolchain-install-master
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      crate: rustup-toolchain-install-master
+      git: dtolnay-contrib/rustup-toolchain-install-master
+      ref: nodefault
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write
