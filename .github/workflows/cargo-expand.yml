@@ -1,0 +1,17 @@
+name: cargo-expand
+
+on:
+  push:
+    branches:
+      - cargo-expand
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      crate: cargo-expand
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write

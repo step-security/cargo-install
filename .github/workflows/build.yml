@@ -1,0 +1,71 @@
+name: build
+
+on:
+  workflow_call:
+    inputs:
+      crate:
+        required: true
+        type: string
+      version:
+        required: false
+        type: string
+      bin:
+        required: false
+        type: string
+      git:
+        required: false
+        type: string
+      ref:
+        required: false
+        type: string
+      path:
+        required: false
+        type: string
+      toolchain:
+        required: false
+        type: string
+        default: stable
+      locked:
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    name: ${{inputs.crate}}
+    runs-on: ubuntu-latest
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{inputs.git}}
+          ref: ${{inputs.ref}}
+          path: ${{inputs.crate}}
+        if: inputs.git
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{inputs.toolchain}}
+      - run: cargo install --force ${{inputs.git && format('--path={0}', inputs.path || '.') || inputs.crate}} ${{inputs.version && format('--version={0}', inputs.version) || ''}} --bin ${{inputs.bin || inputs.crate}} ${{inputs.locked && '--locked' || ''}}
+        working-directory: ${{inputs.git && inputs.crate || '.'}}
+      - id: which
+        run: echo "which=$(which ${{inputs.bin || inputs.crate}})" >> $GITHUB_OUTPUT
+      - id: version
+        run: echo "version=$(cargo install --list | grep -o '^${{inputs.crate}} \([^ :]\)\+')" >> $GITHUB_OUTPUT
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: ${{steps.which.outputs.which}}
+      - run: git tag -d ${{inputs.crate}} || true
+      - run: git tag ${{inputs.crate}}
+      - run: git push origin tag ${{inputs.crate}} --force
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{inputs.crate}}
+          target_commitish: ${{github.ref}}
+          files: ${{steps.which.outputs.which}}
+          fail_on_unmatched_files: true
+          body: ${{steps.version.outputs.version}}

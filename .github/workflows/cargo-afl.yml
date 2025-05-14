@@ -1,0 +1,17 @@
+name: cargo-afl
+
+on:
+  push:
+    branches:
+      - cargo-afl
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      crate: cargo-afl
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write

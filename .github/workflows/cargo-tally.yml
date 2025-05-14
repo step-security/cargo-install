@@ -1,0 +1,17 @@
+name: cargo-tally
+
+on:
+  push:
+    branches:
+      - cargo-tally
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      crate: cargo-tally
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write

@@ -1,0 +1,17 @@
+name: buckle
+
+on:
+  push:
+    branches:
+      - buckle
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      crate: buckle
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write

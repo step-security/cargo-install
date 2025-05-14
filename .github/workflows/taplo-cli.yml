@@ -1,0 +1,19 @@
+name: taplo-cli
+
+on:
+  push:
+    branches:
+      - taplo-cli
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      crate: taplo-cli
+      bin: taplo
+      locked: true
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write
